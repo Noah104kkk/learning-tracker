@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 外部通信を一切許可しない設定。このページは自分のファイルしか読み込まず、どこにもデータを送りません。 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>学習進捗トラッカー</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>学習進捗トラッカー</h1>
+    <p class="sub">講座・資格・自習など、何にでも使える進捗管理。データはこのブラウザの中だけに保存されます。</p>
+  </header>
+
+  <main>
+    <section class="card summary" aria-labelledby="sum-h">
+      <h2 id="sum-h">全体の進捗</h2>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="overall-bar">
+        <div class="bar-fill" id="overall-fill"></div>
+      </div>
+      <p id="overall-text" class="muted"></p>
+    </section>
+
+    <section class="card" aria-labelledby="dl-h">
+      <h2 id="dl-h">近い締切</h2>
+      <ul id="deadlines" class="plain"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="add-h">
+      <h2 id="add-h">講座を追加</h2>
+      <form id="course-form" class="row">
+        <label class="grow">講座名
+          <input id="course-name" type="text" maxlength="60" required placeholder="例: データ分析入門">
+        </label>
+        <label>型
+          <select id="course-template">
+            <option value="ondemand">オンデマンド講座型</option>
+            <option value="simple">回数だけ</option>
+          </select>
+        </label>
+        <label>回数
+          <input id="course-count" type="number" min="0" max="100" value="5">
+        </label>
+        <button type="submit">追加</button>
+      </form>
+      <p class="muted">「オンデマンド講座型」は、各回を「視聴」と「課題」に分け、最後に「最終課題」と「アンケート提出」を付けます。後から項目を追加・削除できます。</p>
+    </section>
+
+    <div id="courses"></div>
+
+    <section class="card tools" aria-labelledby="tool-h">
+      <h2 id="tool-h">データ管理</h2>
+      <div class="row wrap">
+        <button type="button" id="btn-sample">サンプルを読み込む</button>
+        <button type="button" id="btn-export">JSONで書き出す</button>
+        <label class="filebtn">JSONを読み込む
+          <input id="file-import" type="file" accept="application/json,.json">
+        </label>
+        <button type="button" id="btn-reset" class="danger">全データを削除</button>
+      </div>
+      <p class="muted">書き出したJSONはあなたの端末に保存されます。サーバーには何も送信されません。</p>
+      <p id="msg" class="msg" role="status"></p>
+    </section>
+  </main>
+
+  <footer>MIT License ・ 個人情報は扱いません。サンプルはすべて架空のデータです。</footer>
+  <script src="app.js"></script>
+</body>
+</html>
