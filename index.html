@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- 外部通信を一切許可しない設定。このページは自分のファイルしか読み込まず、どこにもデータを送りません。 -->
+  <!-- 外部通信を一切許可しない設定。自分のファイルしか読み込まず、データをどこにも送りません。 -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <title>学習進捗トラッカー</title>
@@ -12,7 +12,7 @@
 <body>
   <header class="top">
     <h1>学習進捗トラッカー</h1>
-    <p class="sub">講座・資格・自習など、何にでも使える進捗管理。データはこのブラウザの中だけに保存されます。</p>
+    <p class="sub">講座・資格・自習の進捗、学習時間、ペース予測をまとめて管理。データはこのブラウザの中だけに保存されます。</p>
   </header>
 
   <main>
@@ -22,6 +22,46 @@
         <div class="bar-fill" id="overall-fill"></div>
       </div>
       <p id="overall-text" class="muted"></p>
+      <dl class="kpis">
+        <div><dt>連続学習</dt><dd id="kpi-streak">0日</dd></div>
+        <div><dt>今週の学習</dt><dd id="kpi-week">0分</dd></div>
+        <div><dt>累計</dt><dd id="kpi-total">0分</dd></div>
+      </dl>
+    </section>
+
+    <section class="card" aria-labelledby="chart-h">
+      <h2 id="chart-h">学習時間（直近7日）</h2>
+      <div id="week-chart" class="chart"></div>
+      <h2 class="mt">学習カレンダー（直近12週）</h2>
+      <div id="heatmap" class="heatmap" role="img" aria-label="直近12週の学習量ヒートマップ"></div>
+      <p class="muted legend">少 <span class="cell l0"></span><span class="cell l1"></span><span class="cell l2"></span><span class="cell l3"></span><span class="cell l4"></span> 多</p>
+    </section>
+
+    <section class="card" aria-labelledby="timer-h">
+      <h2 id="timer-h">学習タイマー</h2>
+      <div class="timer">
+        <div id="timer-display" class="timer-display" aria-live="off">25:00</div>
+        <div class="row wrap">
+          <label>記録先
+            <select id="timer-course"></select>
+          </label>
+          <label>時間（分）
+            <input id="timer-minutes" type="number" min="1" max="180" value="25">
+          </label>
+          <button type="button" id="timer-start">開始</button>
+          <button type="button" id="timer-reset" class="ghost">リセット</button>
+        </div>
+        <p class="muted">終了すると自動で学習時間に記録されます。</p>
+      </div>
+      <form id="log-form" class="row wrap manual">
+        <label>手動で記録（分）
+          <input id="log-minutes" type="number" min="1" max="1440" value="30" required>
+        </label>
+        <label>日付
+          <input id="log-date" type="date" required>
+        </label>
+        <button type="submit" class="ghost">記録を追加</button>
+      </form>
     </section>
 
     <section class="card" aria-labelledby="dl-h">
@@ -31,7 +71,7 @@
 
     <section class="card" aria-labelledby="add-h">
       <h2 id="add-h">講座を追加</h2>
-      <form id="course-form" class="row">
+      <form id="course-form" class="row wrap">
         <label class="grow">講座名
           <input id="course-name" type="text" maxlength="60" required placeholder="例: データ分析入門">
         </label>
@@ -44,9 +84,29 @@
         <label>回数
           <input id="course-count" type="number" min="0" max="100" value="5">
         </label>
+        <label>修了目標日
+          <input id="course-target" type="date">
+        </label>
         <button type="submit">追加</button>
       </form>
-      <p class="muted">「オンデマンド講座型」は、各回を「視聴」と「課題」に分け、最後に「最終課題」と「アンケート提出」を付けます。後から項目を追加・削除できます。</p>
+      <p class="muted">「オンデマンド講座型」は、各回を「視聴」と「課題」に分け、最後に「最終課題」と「アンケート提出」を付けます。</p>
+    </section>
+
+    <section class="card filters" aria-label="絞り込み">
+      <div class="row wrap">
+        <label>状態
+          <select id="filter-status">
+            <option value="all">すべて</option>
+            <option value="todo">未着手</option>
+            <option value="doing">進行中</option>
+            <option value="done">完了</option>
+            <option value="open">未完了すべて</option>
+          </select>
+        </label>
+        <label class="grow">検索
+          <input id="filter-q" type="text" maxlength="40" placeholder="項目名・メモを検索">
+        </label>
+      </div>
     </section>
 
     <div id="courses"></div>
@@ -67,6 +127,8 @@
   </main>
 
   <footer>MIT License ・ 個人情報は扱いません。サンプルはすべて架空のデータです。</footer>
+  <script src="stats.js"></script>
+  <script src="store.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
