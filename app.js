@@ -392,6 +392,64 @@
     });
   }
 
+  // ---------- 遅れ取り戻しプランナー ----------
+  let lastPlan = null;
+  const WD = ["日", "月", "火", "水", "木", "金", "土"];
+
+  function readPlanOpts() {
+    const perDay = parseInt($("plan-perday").value, 10) || 1;
+    const offDays = Array.from(document.querySelectorAll('input[name="off"]:checked')).map((c) => parseInt(c.value, 10));
+    return { perDay, offDays };
+  }
+
+  function renderPlan() {
+    const box = $("plan-result");
+    const opts = readPlanOpts();
+    const today = now();
+    const result = Planner.plan(state.courses, today, opts);
+    lastPlan = result;
+    $("plan-ics").disabled = result.days.length === 0;
+    box.replaceChildren();
+    if (result.total === 0) {
+      box.appendChild(el("p", { class: "muted", text: "未完了の項目はありません。" }));
+      return;
+    }
+    const min = Planner.minPerDay(state.courses, today, opts.offDays);
+    const verdict = result.feasible
+      ? `全${result.total}件、${result.finishDate}に完了予定。すべて締切に間に合います。`
+      : `全${result.total}件、完了予定は${result.finishDate || "—"}。締切に間に合わない項目が${result.late.length}件${result.unscheduled.length ? `、1年以内に入らない項目が${result.unscheduled.length}件` : ""}あります。`;
+    box.appendChild(el("p", { class: result.feasible ? "plan-ok" : "plan-ng", text: verdict }));
+    box.appendChild(el("p", { class: "muted", text: min === null
+      ? "1日20件でも全部は間に合いません。締切か範囲の見直しが必要です。"
+      : `全部を締切に間に合わせる最低ペース：1日${min}件（休む曜日はこの設定のまま）` }));
+    const list = el("ol", { class: "plan-days" });
+    for (const day of result.days.slice(0, 14)) {
+      list.appendChild(el("li", {}, [
+        el("strong", { text: `${day.date}（${WD[day.weekday]}）` }),
+        el("ul", { class: "plain" }, day.items.map((i) =>
+          el("li", { class: i.daysLate ? "tag-over" : "", text: `${i.course}：${i.title}${i.daysLate ? `（締切${i.due}を${i.daysLate}日超過）` : ""}` })
+        )),
+      ]));
+    }
+    box.appendChild(list);
+    if (result.days.length > 14) box.appendChild(el("p", { class: "muted", text: `…ほか${result.days.length - 14}日分（.icsに全部入ります）` }));
+  }
+
+  $("plan-form").addEventListener("submit", (e) => { e.preventDefault(); renderPlan(); });
+  $("plan-ics").addEventListener("click", () => {
+    if (!lastPlan || lastPlan.days.length === 0) return;
+    const blob = new Blob([Planner.toICS(lastPlan, "学習プラン", new Date())], { type: "text/calendar" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "learning-plan.ics";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showMsg("学習プラン（.ics）を書き出しました。カレンダーアプリで読み込めます。");
+  });
+
   $("btn-sample").addEventListener("click", () => {
     if ((state.courses.length || state.sessions.length) && !confirm("現在のデータはサンプルで置き換わります。よろしいですか？")) return;
     state = sampleData();

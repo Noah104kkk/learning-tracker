@@ -69,6 +69,29 @@
       <ul id="deadlines" class="plain"></ul>
     </section>
 
+    <section class="card" aria-labelledby="plan-h">
+      <h2 id="plan-h">遅れ取り戻しプランナー</h2>
+      <p class="muted">未完了の項目を締切の早い順に並べ、1日にこなす数と休む曜日から日ごとの計画を作ります。間に合わない項目と、間に合わせるための最低ペースも出します。</p>
+      <form id="plan-form" class="row wrap">
+        <label>1日あたりの項目数
+          <input id="plan-perday" type="number" min="1" max="20" value="2">
+        </label>
+        <fieldset class="offdays">
+          <legend>休む曜日</legend>
+          <label><input type="checkbox" name="off" value="0"> 日</label>
+          <label><input type="checkbox" name="off" value="1"> 月</label>
+          <label><input type="checkbox" name="off" value="2"> 火</label>
+          <label><input type="checkbox" name="off" value="3"> 水</label>
+          <label><input type="checkbox" name="off" value="4"> 木</label>
+          <label><input type="checkbox" name="off" value="5"> 金</label>
+          <label><input type="checkbox" name="off" value="6"> 土</label>
+        </fieldset>
+        <button type="submit">プランを作る</button>
+        <button type="button" id="plan-ics" class="ghost" disabled>.icsで書き出す</button>
+      </form>
+      <div id="plan-result" class="plan-result" aria-live="polite"></div>
+    </section>
+
     <section class="card" aria-labelledby="add-h">
       <h2 id="add-h">講座を追加</h2>
       <form id="course-form" class="row wrap">
@@ -129,6 +152,7 @@
   <footer>MIT License ・ 個人情報は扱いません。サンプルはすべて架空のデータです。</footer>
   <script src="stats.js"></script>
   <script src="store.js"></script>
+  <script src="planner.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

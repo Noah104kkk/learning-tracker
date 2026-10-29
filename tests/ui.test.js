@@ -13,7 +13,7 @@ function boot() {
   const dom = new JSDOM(html, { runScripts: "outside-only", url: "http://localhost/" });
   const w = dom.window;
   w.confirm = () => true;
-  for (const f of ["stats.js", "store.js", "app.js"]) w.eval(read(f));
+  for (const f of ["stats.js", "store.js", "planner.js", "app.js"]) w.eval(read(f));
   return w;
 }
 
@@ -103,4 +103,21 @@ test("セキュリティ: CSPが外部接続を禁止し、危険なAPIをソー
     const code = read(f).replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     assert.doesNotMatch(code, /\.innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function|fetch\(|XMLHttpRequest|sendBeacon|WebSocket/, f);
   }
+});
+
+test("プランナー: 計画を作り、.ics ボタンが有効になる。講座名のHTMLは要素にならない", () => {
+  const w = boot();
+  addCourse(w, "<b>x</b>", 2);
+  w.document.getElementById("plan-perday").value = "3";
+  assert.equal(w.document.getElementById("plan-ics").disabled, true);
+  submit(w, "plan-form");
+  assert.ok(w.document.querySelectorAll("#plan-result .plan-days > li").length >= 1);
+  assert.equal(w.document.querySelector("#plan-result b"), null);
+  assert.equal(w.document.getElementById("plan-ics").disabled, false);
+});
+
+test("プランナー: 未完了がなければその旨を表示する", () => {
+  const w = boot();
+  submit(w, "plan-form");
+  assert.match(w.document.getElementById("plan-result").textContent, /未完了の項目はありません/);
 });
